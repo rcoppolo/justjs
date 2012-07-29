@@ -1,6 +1,9 @@
 var mongo = require('mongodb');
 
-var db, postCollection, context, settings;
+var db;
+var postCollection;
+var context;
+var settings;
 
 module.exports = db = {
   init: function(contextArg, callback) {
@@ -14,6 +17,7 @@ module.exports = db = {
       if (err) {
         callback(err);
       }
+      postCollection = dbConnection.collection('post');
       postCollection.ensureIndex("slug", {unique: true}, function(error, indexName) {
         callback(err);
       });
@@ -28,7 +32,7 @@ module.exports = db = {
     },
 
     findOneBySlug: function(slug, callback) {
-      postCollection.findOne({slug: slug}), function(err, post) {
+      postCollection.findOne({slug: slug}, function(err, post) {
         callback(err, post);
       });
     },
@@ -42,23 +46,23 @@ module.exports = db = {
         } else {
           callback(err, post);
         }
-      }):
-    },
-
-    slugify: function(s) {
-      // Everything not a letter or number becomes a dash
-      s = s.replace(/[^A-Za-z0-9]/g, '-');
-      // Consecutive dashes become one dash
-      s = s.replace(/\-+/g, '-');
-      // Leading dashes go away
-      s = s.replace(/^\-/, '');
-      // Trailing dashes go away
-      s = s.replace(/\-$/, '');
-      // If the string is empty, supply something so that routes still match
-      if (!s.length) {
-        s = 'none';
-      }
-      return s.toLowerCase();
+      });
     }
+  },
+
+  slugify: function(s) {
+    // Everything not a letter or number becomes a dash
+    s = s.replace(/[^A-Za-z0-9]/g, '-');
+    // Consecutive dashes become one dash
+    s = s.replace(/\-+/g, '-');
+    // Leading dashes go away
+    s = s.replace(/^\-/, '');
+    // Trailing dashes go away
+    s = s.replace(/\-$/, '');
+    // If the string is empty, supply something so that routes still match
+    if (!s.length) {
+      s = 'none';
+    }
+    return s.toLowerCase();
   }
-}
+};
